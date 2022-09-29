@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.toastProgress {
+  background: #00b37e !important;
+}
+
+.toastBody {
+  background: #202024 !important;
+  color: #e1e1e6;
+  text-align: center;
+}
