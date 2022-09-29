@@ -23,20 +23,26 @@ export function Cart({ toggleCart, closeCart, continueShopping }: CartProps) {
     setIsloading(true)
     const myCartItems = Object.entries(cartDetails!)
     try {
-      setisCreatingCheckoutSession(true)
-      const response = await axios.post('/api/checkout', {
-        cartItems: myCartItems.map((cart) => {
-          return cart[1]
-        }),
-      })
-      if (response.status === 500) return
+      if (cartCount! > 0) {
+        setisCreatingCheckoutSession(true)
+        const response = await axios.post('/api/checkout', {
+          cartItems: myCartItems.map((cart) => {
+            return cart[1]
+          }),
+        })
 
-      if (response) {
+        if (response) {
+          setIsloading(false)
+          toast.loading('Redirecionando...')
+          const { checkoutUrl } = response.data
+          window.location.href = checkoutUrl
+        }
+      } else {
         setIsloading(false)
-        toast.loading('Redirecionando...')
-        const { checkoutUrl } = response.data
-        console.log(checkoutUrl)
-        window.location.href = checkoutUrl
+        toast.warn('Não existe produto no carrinho', {
+          autoClose: 2000,
+          className: 'toastBody',
+        })
       }
     } catch (err) {
       // conectar a uma ferramenta de observabilidade (Datadog /Sentry)
@@ -62,63 +68,90 @@ export function Cart({ toggleCart, closeCart, continueShopping }: CartProps) {
           </button>
         </div>
         <div>Sacola de compras</div>
-        <div className="flex flex-col gap-6 mt-8">
-          {Object.entries(cartDetails!).map((cart) => {
-            return (
-              <div key={cart[1].id} className="flex gap-5">
-                <ImageContainer>
-                  <img src={cart[1].imageUrl} width={101} height={93} alt="" />
-                </ImageContainer>
-                <div className="flex flex-col items-start justify-between">
-                  <h1>{cart[1].name}</h1>
-                  <span className="font-extrabold">
-                    {currencyFormatter(cart[1].price / 100)}
-                  </span>
-                  <button
-                    onClick={() => removeItem(cart[1].id)}
-                    className="text-primary-500 font-bold text-base"
-                  >
-                    Remover
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        {cartCount! === 0 ? (
+          <div className="flex w-full px-12 mt-11 items-center justify-center mx-auto p-20">
+            <div>O carrinho está vazio</div>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-6 mt-8">
+              {Object.entries(cartDetails!).map((cart) => {
+                return (
+                  <div key={cart[1].id} className="flex gap-5">
+                    <ImageContainer>
+                      <img
+                        src={cart[1].imageUrl}
+                        width={101}
+                        height={93}
+                        alt=""
+                      />
+                    </ImageContainer>
+                    <div className="flex flex-col items-start justify-between">
+                      <h1>{cart[1].name}</h1>
+                      <span className="font-extrabold">
+                        {currencyFormatter(cart[1].price / 100)}
+                      </span>
+                      <button
+                        onClick={() => removeItem(cart[1].id)}
+                        className="text-primary-500 font-bold text-base"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       <div id="footer" className="flex flex-col w-full px-12 gap-2">
-        <div className="flex w-full items-center justify-between">
-          <span className="text-gray-100">Quantidade</span>
-          <span className="text-gray-100">
-            {cartCount === 1 ? cartCount + ' item' : cartCount + ' itens'}
-          </span>
-        </div>
-        <div className="flex w-full items-center justify-between">
-          <span className="text-gray-100">Valor total:</span>
-          <span className="text-gray-100 text-2xl font-bold">
-            {formattedTotalPrice!}
-          </span>
-        </div>
-        <button
-          type="button"
-          className="flex justify-center font-bold mt-12 py-5 rounded-lg bg-primary-500 hover:bg-primary-300
+        {cartCount! === 0 ? (
+          <>
+            <button
+              className="flex justify-center font-bold py-5 rounded-lg bg-primary-500 hover:bg-primary-300
           transition-all delay-150 ease-linear"
-          disabled={isCreatingCheckoutSession}
-          onClick={handleCheckout}
-        >
-          {isLoading ? <Spinning /> : 'Finalizar compra'}
-        </button>
-        <span className="flex items-center justify-center w-full text-sm">
-          OU
-        </span>
-        <button
-          className="flex justify-center font-bold py-5 rounded-lg bg-primary-500 hover:bg-primary-300
+              onClick={continueShopping}
+            >
+              Continuar comprando
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex w-full items-center justify-between">
+              <span className="text-gray-100">Quantidade</span>
+              <span className="text-gray-100">
+                {cartCount === 1 ? cartCount + ' item' : cartCount + ' itens'}
+              </span>
+            </div>
+            <div className="flex w-full items-center justify-between">
+              <span className="text-gray-100">Valor total:</span>
+              <span className="text-gray-100 text-2xl font-bold">
+                {formattedTotalPrice!}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="flex justify-center font-bold mt-12 py-5 rounded-lg bg-primary-500 hover:bg-primary-300
           transition-all delay-150 ease-linear"
-          onClick={continueShopping}
-        >
-          Continuar comprando
-        </button>
+              disabled={isCreatingCheckoutSession}
+              onClick={handleCheckout}
+            >
+              {isLoading ? <Spinning /> : 'Finalizar compra'}
+            </button>
+            <span className="flex items-center justify-center w-full text-sm">
+              OU
+            </span>
+            <button
+              className="flex justify-center font-bold py-5 rounded-lg bg-primary-500 hover:bg-primary-300
+          transition-all delay-150 ease-linear"
+              onClick={continueShopping}
+            >
+              Continuar comprando
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
