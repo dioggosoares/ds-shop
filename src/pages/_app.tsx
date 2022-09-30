@@ -50,7 +50,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
         <ToastContainer
           progressClassName="toastProgress"
-          // bodyClassName="toastBody"
           closeButton={false}
           position="top-left"
         />
