@@ -14,6 +14,7 @@
     "@stitches/react": "^1.2.8",
     "@stripe/stripe-js": "^1.36.0",
     "axios": "^0.27.2",
+    "daisyui": "^2.31.0",
     "keen-slider": "^6.7.0",
     "next": "12.2.5",
     "phosphor-react": "^1.4.1",
